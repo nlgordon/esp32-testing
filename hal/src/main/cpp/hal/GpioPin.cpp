@@ -10,13 +10,13 @@ GpioPin::GpioPin(int pin) {
     io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
     io_conf.pull_up_en = GPIO_PULLUP_DISABLE;
     this->pin = static_cast<gpio_num_t>(pin);
-    gpio_config(&io_conf);
+    ESP_ERROR_CHECK(gpio_config(&io_conf));
 }
 
 void GpioPin::high() {
-    gpio_set_level(this->pin, 1);
+    ESP_ERROR_CHECK(gpio_set_level(this->pin, 1));
 }
 
 void GpioPin::low() {
-    gpio_set_level(this->pin, 0);
+    ESP_ERROR_CHECK(gpio_set_level(this->pin, 0));
 }
