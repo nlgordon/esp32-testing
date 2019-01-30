@@ -1,0 +1,4 @@
+#!/bin/bash
+
+cp -r esp-idf-template $1
+rm -rf $1/.git

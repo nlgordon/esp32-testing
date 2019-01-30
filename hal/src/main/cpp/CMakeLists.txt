@@ -1,5 +1,0 @@
-add_library(hal OBJECT hal/GpioPin.cpp hal/GpioPin.h)
-target_include_directories(hal SYSTEM PUBLIC $ENV{IDF_PATH}/components/driver/include)
-target_include_directories(hal SYSTEM PUBLIC $ENV{IDF_PATH}/components/esp32/include)
-target_include_directories(hal SYSTEM PUBLIC $ENV{IDF_PATH}/components/soc/esp32/include)
-target_include_directories(hal SYSTEM PUBLIC $ENV{IDF_PATH}/components/soc/include)

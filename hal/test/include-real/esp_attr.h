@@ -1,0 +1,5 @@
+#ifndef PROJECT_ESP_ATTR_H
+#define PROJECT_ESP_ATTR_H
+#define IRAM_ATTR
+
+#endif //PROJECT_ESP_ATTR_H
