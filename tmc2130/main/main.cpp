@@ -104,10 +104,8 @@ void app_main(void)
     for (int i = 0; i < MICRO_STEPPING * STEPPER_STEPS_PER_REVOLUTION; i++) {
         stepPin.high();
         usleep(1);
-//        delayMilliseconds(1);
         stepPin.low();
         usleep(1);
-//        delayMilliseconds(1);
     }
     printf("Done stepping\n");
     enablePin.high();

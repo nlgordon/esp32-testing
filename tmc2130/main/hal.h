@@ -40,7 +40,6 @@ private:
     SPIBus &bus;
 public:
     SPIDevice(int pinChipSelect, SPIBus &bus, uint8_t command_bits);
-    std::unique_ptr<std::vector<uint8_t>> transfer(uint16_t cmd, uint64_t addr, const std::vector<uint8_t> &tx);
     std::unique_ptr<std::vector<uint8_t>> transfer(const std::vector<uint8_t> &tx);
 };
 
