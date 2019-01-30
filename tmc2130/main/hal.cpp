@@ -48,7 +48,7 @@ SPIBus::SPIBus() {
             .flags = 0
     };
     //Initialize the SPI bus
-    ret=spi_bus_initialize(VSPI_HOST, &buscfg, 1);
+    ret=spi_bus_initialize(VSPI_HOST, &buscfg, 0);
     ESP_ERROR_CHECK(ret);
 }
 
@@ -136,6 +136,7 @@ void printVector(const vector<uint8_t> &data) {
     for (int i = 0; i < count; i++) {
         printf("0x%02x ", data.data()[(i - 4)]);
     }
+    printf(" Simple Print: ");
     for (auto item : data) {
         printf("0x%02x ", item);
     }
