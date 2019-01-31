@@ -103,7 +103,7 @@ unique_ptr<vector<uint8_t>> SPIDevice::transfer(const uint16_t cmd, const uint64
 }
 
 std::unique_ptr<std::vector<uint8_t>> SPIDevice::transfer(const std::vector<uint8_t> &tx) {
-    printVector(tx);
+//    printVector(tx);
     esp_err_t ret;
     unsigned int tx_bytes = tx.size();
     unique_ptr<vector<uint8_t>> rx(new vector<uint8_t>(tx_bytes));
@@ -121,10 +121,10 @@ std::unique_ptr<std::vector<uint8_t>> SPIDevice::transfer(const std::vector<uint
             { .rx_buffer = rx->data() }
     };
 
-    printVector(*rx);
+//    printVector(*rx);
     ret = spi_device_transmit(spi, &transaction);
     ESP_ERROR_CHECK(ret);
-    printVector(*rx);
+//    printVector(*rx);
 
     return rx;
 }
@@ -132,10 +132,10 @@ std::unique_ptr<std::vector<uint8_t>> SPIDevice::transfer(const std::vector<uint
 void printVector(const vector<uint8_t> &data) {
     printf("Start: 0x%02x ", (unsigned int)data.data());
     printf("End: 0x%02x ", (unsigned int)(data.data() + data.size()));
-    int count = data.size() + 8;
-    for (int i = 0; i < count; i++) {
-        printf("0x%02x ", data.data()[(i - 4)]);
-    }
+//    int count = data.size() + 8;
+//    for (int i = 0; i < count; i++) {
+//        printf("0x%02x ", data.data()[(i - 4)]);
+//    }
     printf(" Simple Print: ");
     for (auto item : data) {
         printf("0x%02x ", item);
