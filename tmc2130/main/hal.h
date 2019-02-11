@@ -45,6 +45,6 @@ public:
 };
 
 void delayMilliseconds(int milliseconds);
-void printVector(const std::vector<uint8_t> &data);
+void printVector(const std::vector<uint8_t> &data, const std::string &label);
 
 #endif //TMC_2130_HAL_H

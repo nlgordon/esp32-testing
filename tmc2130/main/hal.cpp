@@ -8,6 +8,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "esp_system.h"
+#include "esp_log.h"
 
 using namespace std;
 
@@ -103,7 +104,7 @@ unique_ptr<vector<uint8_t>> SPIDevice::transfer(const uint16_t cmd, const uint64
 }
 
 std::unique_ptr<std::vector<uint8_t>> SPIDevice::transfer(const std::vector<uint8_t> &tx) {
-//    printVector(tx);
+//    printVector(tx, "transfer bytes");
     esp_err_t ret;
     unsigned int tx_bytes = tx.size();
     unique_ptr<vector<uint8_t>> rx(new vector<uint8_t>(tx_bytes));
@@ -129,14 +130,15 @@ std::unique_ptr<std::vector<uint8_t>> SPIDevice::transfer(const std::vector<uint
     return rx;
 }
 
-void printVector(const vector<uint8_t> &data) {
-    printf("Start: 0x%02x ", (unsigned int)data.data());
-    printf("End: 0x%02x ", (unsigned int)(data.data() + data.size()));
+void printVector(const vector <uint8_t> &data, const std::string &label) {
+//    printf("Start: 0x%02x ", (unsigned int)data.data());
+//    printf("End: 0x%02x ", (unsigned int)(data.data() + data.size()));
 //    int count = data.size() + 8;
 //    for (int i = 0; i < count; i++) {
 //        printf("0x%02x ", data.data()[(i - 4)]);
 //    }
-    printf(" Simple Print: ");
+    printf("%s : ", label.c_str());
+//    std::cout << label << "Simple Print: ";
     for (auto item : data) {
         printf("0x%02x ", item);
     }
