@@ -12,15 +12,32 @@
 
 using namespace std;
 
-GPIOPin::GPIOPin(int pin) {
+Pin::Pin(int pin) {
     this->pin = static_cast<gpio_num_t>(pin);
+}
+
+gpio_num_t Pin::getPin() {
+    return this->pin;
+}
+
+GPIOPin::GPIOPin(int pin) : pinObj(pin) {
+    this->pin = pinObj.getPin();
+    setupGpioHardware();
+}
+
+GPIOPin::GPIOPin(Pin pinObj) : pinObj(pinObj) {
+    this->pin = pinObj.getPin();
+    setupGpioHardware();
+}
+
+void GPIOPin::setupGpioHardware() const {
     gpio_config_t io_conf;
     //disable interrupt
     io_conf.intr_type = GPIO_INTR_DISABLE;
     //set as output mode
     io_conf.mode = GPIO_MODE_OUTPUT;
     //bit mask of the pins that you want to set,e.g.GPIO18/19
-    io_conf.pin_bit_mask = (1ULL<<this->pin);
+    io_conf.pin_bit_mask = (1ULL << pin);
     //disable pull-down mode
     io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
     //disable pull-up mode
@@ -59,7 +76,7 @@ SPIDevice::SPIDevice(int pinChipSelect, SPIBus &bus, uint8_t command_bits) : bus
             .command_bits = command_bits,
             .address_bits = 0,
             .dummy_bits = 0,
-            .mode = 3,                                //SPI mode 0
+            .mode = 3,
             .duty_cycle_pos = 0,
             .cs_ena_pretrans = 0,
             .cs_ena_posttrans = 0,
@@ -104,7 +121,6 @@ unique_ptr<vector<uint8_t>> SPIDevice::transfer(const uint16_t cmd, const uint64
 }
 
 std::unique_ptr<std::vector<uint8_t>> SPIDevice::transfer(const std::vector<uint8_t> &tx) {
-//    printVector(tx, "transfer bytes");
     esp_err_t ret;
     unsigned int tx_bytes = tx.size();
     unique_ptr<vector<uint8_t>> rx(new vector<uint8_t>(tx_bytes));
@@ -122,23 +138,14 @@ std::unique_ptr<std::vector<uint8_t>> SPIDevice::transfer(const std::vector<uint
             { .rx_buffer = rx->data() }
     };
 
-//    printVector(*rx);
     ret = spi_device_transmit(spi, &transaction);
     ESP_ERROR_CHECK(ret);
-//    printVector(*rx);
 
     return rx;
 }
 
 void printVector(const vector <uint8_t> &data, const std::string &label) {
-//    printf("Start: 0x%02x ", (unsigned int)data.data());
-//    printf("End: 0x%02x ", (unsigned int)(data.data() + data.size()));
-//    int count = data.size() + 8;
-//    for (int i = 0; i < count; i++) {
-//        printf("0x%02x ", data.data()[(i - 4)]);
-//    }
     printf("%s : ", label.c_str());
-//    std::cout << label << "Simple Print: ";
     for (auto item : data) {
         printf("0x%02x ", item);
     }
