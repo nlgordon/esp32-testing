@@ -64,8 +64,11 @@ void app_main(void)
 
     printf("Starting initialization\n");
     SPIBus spiBus;
-    htobe32(32);
-    be32toh(32);
+
+    hal::HardwareContext context;
+    hal::Pin pin(context.getPin(8));
+    printf("Pin: %i", pin.getPin());
+
 
     printf("Initialized and adding device\n");
     SPIDevice spiDevice(PIN_NUM_CS, spiBus, 0);
@@ -78,9 +81,9 @@ void app_main(void)
     print_register(spiDevice, REG_CHOPCONF);
 
     printf("Setting current reference\n");
-    const vector<uint8_t> &gconf_reg_set = vector<uint8_t> {WRITE_FLAG | REG_GCONF, 0x00, 0x00, 0x00, 0x01};
-    const vector<uint8_t> &ihold_reg_set = vector<uint8_t> {WRITE_FLAG | REG_IHOLD_IRUN, 0x00, 0x00, 0x10, 0x10};
-    const vector<uint8_t> &chopconf_reg_set = vector<uint8_t> {WRITE_FLAG | REG_CHOPCONF, 0x00, 0x00, 0x80, 0x08};
+    const vector<uint8_t> gconf_reg_set = vector<uint8_t> {WRITE_FLAG | REG_GCONF, 0x00, 0x00, 0x00, 0x01};
+    const vector<uint8_t> ihold_reg_set = vector<uint8_t> {WRITE_FLAG | REG_IHOLD_IRUN, 0x00, 0x00, 0x10, 0x10};
+    const vector<uint8_t> chopconf_reg_set = vector<uint8_t> {WRITE_FLAG | REG_CHOPCONF, 0x00, 0x00, 0x80, 0x08};
     printVector(gconf_reg_set, "GCONF");
     spiDevice.transfer(gconf_reg_set);
     printVector(ihold_reg_set, "IHOLD");

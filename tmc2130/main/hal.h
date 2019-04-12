@@ -9,27 +9,59 @@
 #include <driver/spi_master.h>
 #include <vector>
 #include <memory>
+#include "pimpl.h"
 
 #define PIN_NUM_MISO GPIO_NUM_19
 #define PIN_NUM_MOSI GPIO_NUM_23
 #define PIN_NUM_CLK  GPIO_NUM_18
 #define PARALLEL_LINES GPIO_NUM_16
 
-class Pin {
-    gpio_num_t pin;
+// Completely re-work this to a context manager which is a factory of all HW resources
+namespace hal {
+class Pin;
+//class GPIOPin;
+class Esp32HardwareContext;
+class Esp32Pin;
+//class Esp32GPIOPin;
+
+class HardwareContext {
+    pimpl<Esp32HardwareContext> m;
 
 public:
-    Pin(int pin);
-    gpio_num_t getPin();
+    HardwareContext();
+    ~HardwareContext();
+    Pin getPin(uint8_t pin);
 };
 
+class Pin {
+public:
+    explicit Pin(std::shared_ptr<Esp32Pin>& pin);
+    ~Pin();
+    uint8_t getPin() const;
+
+private:
+    pimpl_shared<Esp32Pin> m;
+};
+
+//
+//class GPIOPin {
+//    pimpl<Esp32GPIOPin> m;
+//
+//public:
+//    GPIOPin(pimpl_shared<Esp32Pin> pin);
+//    ~GPIOPin();
+//    void high();
+//    void low();
+//};
+}
+
 class GPIOPin {
+//    Pin pinObj = 0;
     gpio_num_t pin;
-    Pin pinObj = 0;
     void setupGpioHardware() const;
 public:
     GPIOPin(int pin);
-    GPIOPin(Pin pinObj);
+//    GPIOPin(Pin pinObj);
 
     void high();
 
@@ -51,11 +83,13 @@ private:
     SPIBus &bus;
 public:
     SPIDevice(int pinChipSelect, SPIBus &bus, uint8_t command_bits);
-    std::unique_ptr<std::vector<uint8_t>> transfer(uint16_t cmd, uint64_t addr, const std::vector<uint8_t> &tx);
-    std::unique_ptr<std::vector<uint8_t>> transfer(const std::vector<uint8_t> &tx);
+    std::unique_ptr<std::vector<uint8_t>> transfer(uint16_t cmd, uint64_t addr, const std::vector<uint8_t> &tx) const;
+    std::unique_ptr<std::vector<uint8_t>> transfer(const std::vector<uint8_t> &tx) const;
+    std::unique_ptr<uint8_t[]> transfer(const uint8_t tx[], size_t length) const;
 };
 
 void delayMilliseconds(int milliseconds);
 void printVector(const std::vector<uint8_t> &data, const std::string &label);
+void printArray(const uint8_t data[], size_t length, const std::string &label);
 
 #endif //TMC_2130_HAL_H

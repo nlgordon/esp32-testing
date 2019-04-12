@@ -9,26 +9,96 @@
 #include "freertos/task.h"
 #include "esp_system.h"
 #include "esp_log.h"
+#include "pimpl_impl.h"
 
 using namespace std;
 
-Pin::Pin(int pin) {
+class hal::Esp32HardwareContext {
+    vector<shared_ptr<Esp32Pin>> pins;
+
+public:
+    Esp32HardwareContext() : pins {40} {};
+    Pin getPin(uint8_t pin);
+};
+
+
+class hal::Esp32Pin {
+    gpio_num_t pin;
+public:
+    explicit Esp32Pin(uint8_t pin);
+    uint8_t getPin() const;
+    gpio_num_t getHwPin() const;
+};
+
+
+// hal::EspHardwareContext
+hal::Pin hal::Esp32HardwareContext::getPin(uint8_t pin) {
+    if (!pins[pin]) {
+        pins[pin].reset(new Esp32Pin(pin));
+    }
+
+    return hal::Pin { pins[pin] };
+}
+
+
+// hal::Esp32Pin
+hal::Esp32Pin::Esp32Pin(uint8_t pin) {
     this->pin = static_cast<gpio_num_t>(pin);
 }
 
-gpio_num_t Pin::getPin() {
+uint8_t hal::Esp32Pin::getPin() const {
     return this->pin;
 }
 
-GPIOPin::GPIOPin(int pin) : pinObj(pin) {
-    this->pin = pinObj.getPin();
+gpio_num_t hal::Esp32Pin::getHwPin() const {
+    return this->pin;
+}
+
+
+// hal::HardwareContext
+hal::HardwareContext::HardwareContext() = default;
+
+hal::Pin hal::HardwareContext::getPin(uint8_t pin) {
+    return m->getPin(pin);
+}
+
+hal::HardwareContext::~HardwareContext() = default;
+
+
+// hal::Pin
+hal::Pin::Pin(shared_ptr<Esp32Pin>& pin) : m {pin} { }
+
+uint8_t hal::Pin::getPin() const {
+    return m->getPin();
+}
+
+hal::Pin::~Pin() = default;
+
+
+// hal::GPIOPin
+//hal::GPIOPin hal::Pin::convertToGpio() {
+//    return GPIOPin(m);
+//}
+//
+//hal::Pin::~Pin() = default;
+//
+//
+//// hal::GPIOPin
+//hal::GPIOPin::GPIOPin(pimpl_shared<hal::Esp32Pin> pin) {
+//
+//}
+
+
+
+//GPIOPin::GPIOPin(int pin) : pinObj(pin) {
+GPIOPin::GPIOPin(int pin) {
+    this->pin = static_cast<gpio_num_t>(pin);
     setupGpioHardware();
 }
 
-GPIOPin::GPIOPin(Pin pinObj) : pinObj(pinObj) {
-    this->pin = pinObj.getPin();
-    setupGpioHardware();
-}
+//GPIOPin::GPIOPin(Pin pinObj) : pinObj(pinObj) {
+//    setupGpioHardware();
+//}
 
 void GPIOPin::setupGpioHardware() const {
     gpio_config_t io_conf;
@@ -37,7 +107,7 @@ void GPIOPin::setupGpioHardware() const {
     //set as output mode
     io_conf.mode = GPIO_MODE_OUTPUT;
     //bit mask of the pins that you want to set,e.g.GPIO18/19
-    io_conf.pin_bit_mask = (1ULL << pin);
+    io_conf.pin_bit_mask = (1ULL << this->pin);
     //disable pull-down mode
     io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
     //disable pull-up mode
@@ -93,7 +163,7 @@ SPIDevice::SPIDevice(int pinChipSelect, SPIBus &bus, uint8_t command_bits) : bus
     ESP_ERROR_CHECK(ret);
 }
 
-unique_ptr<vector<uint8_t>> SPIDevice::transfer(const uint16_t cmd, const uint64_t addr, const vector<uint8_t> &tx) {
+unique_ptr<vector<uint8_t>> SPIDevice::transfer(const uint16_t cmd, const uint64_t addr, const vector<uint8_t> &tx) const {
     esp_err_t ret;
     unsigned int tx_bytes = tx.size();
     unique_ptr<vector<uint8_t>> rx(new vector<uint8_t>(tx_bytes));
@@ -120,7 +190,7 @@ unique_ptr<vector<uint8_t>> SPIDevice::transfer(const uint16_t cmd, const uint64
     return rx;
 }
 
-std::unique_ptr<std::vector<uint8_t>> SPIDevice::transfer(const std::vector<uint8_t> &tx) {
+std::unique_ptr<std::vector<uint8_t>> SPIDevice::transfer(const std::vector<uint8_t> &tx) const {
     esp_err_t ret;
     unsigned int tx_bytes = tx.size();
     unique_ptr<vector<uint8_t>> rx(new vector<uint8_t>(tx_bytes));
@@ -136,6 +206,30 @@ std::unique_ptr<std::vector<uint8_t>> SPIDevice::transfer(const std::vector<uint
             .user = nullptr,
             { .tx_buffer = tx.data() },
             { .rx_buffer = rx->data() }
+    };
+
+    ret = spi_device_transmit(spi, &transaction);
+    ESP_ERROR_CHECK(ret);
+
+    return rx;
+}
+
+std::unique_ptr<uint8_t[]> SPIDevice::transfer(const uint8_t tx[], size_t length) const {
+    esp_err_t ret;
+    auto rx_data = new uint8_t[length];
+    unique_ptr<uint8_t[]> rx{rx_data};
+
+    memset(rx_data, 0, length);
+
+    spi_transaction_t transaction = {
+            .flags = 0,
+            .cmd = 0,
+            .addr = 0,
+            .length = 8 * length,
+            .rxlength = 8 * length,
+            .user = nullptr,
+            { .tx_buffer = tx },
+            { .rx_buffer = rx_data }
     };
 
     ret = spi_device_transmit(spi, &transaction);
