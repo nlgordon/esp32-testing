@@ -15,10 +15,13 @@ using namespace std;
 
 class hal::Esp32HardwareContext {
     vector<shared_ptr<Esp32Pin>> pins;
+    vector<shared_ptr<Esp32GPIOPin>> gpioPins;
 
 public:
-    Esp32HardwareContext() : pins {40} {};
-    Pin getPin(uint8_t pin);
+    Esp32HardwareContext() : pins {40}, gpioPins {40} {};
+    Pin pin(uint8_t pin);
+    GPIOPin gpioPin(const Pin &pin);
+    GPIOPin gpioPin(uint8_t pin);
 };
 
 
@@ -26,18 +29,39 @@ class hal::Esp32Pin {
     gpio_num_t pin;
 public:
     explicit Esp32Pin(uint8_t pin);
-    uint8_t getPin() const;
-    gpio_num_t getHwPin() const;
+    uint8_t getPinNum() const;
+    gpio_num_t getHwPinNum() const;
+};
+
+class hal::Esp32GPIOPin {
+    shared_ptr<hal::Esp32Pin> pin;
+
+public:
+    explicit Esp32GPIOPin(shared_ptr<Esp32Pin> &pin);
+    void high();
+    void low();
 };
 
 
 // hal::EspHardwareContext
-hal::Pin hal::Esp32HardwareContext::getPin(uint8_t pin) {
+hal::Pin hal::Esp32HardwareContext::pin(uint8_t pin) {
     if (!pins[pin]) {
         pins[pin].reset(new Esp32Pin(pin));
     }
 
     return hal::Pin { pins[pin] };
+}
+
+hal::GPIOPin hal::Esp32HardwareContext::gpioPin(const Pin &pin) {
+    uint8_t pinNum {pin.getPinNum() };
+    if (!gpioPins[pinNum]) {
+        gpioPins[pinNum].reset(new Esp32GPIOPin(pins[pinNum]));
+    }
+    return hal::GPIOPin { gpioPins[pinNum] };
+}
+
+hal::GPIOPin hal::Esp32HardwareContext::gpioPin(uint8_t pin) {
+    return gpioPin(this->pin(pin));
 }
 
 
@@ -46,68 +70,24 @@ hal::Esp32Pin::Esp32Pin(uint8_t pin) {
     this->pin = static_cast<gpio_num_t>(pin);
 }
 
-uint8_t hal::Esp32Pin::getPin() const {
+uint8_t hal::Esp32Pin::getPinNum() const {
     return this->pin;
 }
 
-gpio_num_t hal::Esp32Pin::getHwPin() const {
+gpio_num_t hal::Esp32Pin::getHwPinNum() const {
     return this->pin;
 }
 
 
-// hal::HardwareContext
-hal::HardwareContext::HardwareContext() = default;
-
-hal::Pin hal::HardwareContext::getPin(uint8_t pin) {
-    return m->getPin(pin);
-}
-
-hal::HardwareContext::~HardwareContext() = default;
-
-
-// hal::Pin
-hal::Pin::Pin(shared_ptr<Esp32Pin>& pin) : m {pin} { }
-
-uint8_t hal::Pin::getPin() const {
-    return m->getPin();
-}
-
-hal::Pin::~Pin() = default;
-
-
-// hal::GPIOPin
-//hal::GPIOPin hal::Pin::convertToGpio() {
-//    return GPIOPin(m);
-//}
-//
-//hal::Pin::~Pin() = default;
-//
-//
-//// hal::GPIOPin
-//hal::GPIOPin::GPIOPin(pimpl_shared<hal::Esp32Pin> pin) {
-//
-//}
-
-
-
-//GPIOPin::GPIOPin(int pin) : pinObj(pin) {
-GPIOPin::GPIOPin(int pin) {
-    this->pin = static_cast<gpio_num_t>(pin);
-    setupGpioHardware();
-}
-
-//GPIOPin::GPIOPin(Pin pinObj) : pinObj(pinObj) {
-//    setupGpioHardware();
-//}
-
-void GPIOPin::setupGpioHardware() const {
+// hal::Esp32GPIOPin
+hal::Esp32GPIOPin::Esp32GPIOPin(shared_ptr<Esp32Pin> &pin) : pin {pin} {
     gpio_config_t io_conf;
     //disable interrupt
     io_conf.intr_type = GPIO_INTR_DISABLE;
     //set as output mode
     io_conf.mode = GPIO_MODE_OUTPUT;
     //bit mask of the pins that you want to set,e.g.GPIO18/19
-    io_conf.pin_bit_mask = (1ULL << this->pin);
+    io_conf.pin_bit_mask = (1ULL << this->pin->getHwPinNum());
     //disable pull-down mode
     io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
     //disable pull-up mode
@@ -116,13 +96,56 @@ void GPIOPin::setupGpioHardware() const {
     gpio_config(&io_conf);
 }
 
-void GPIOPin::high() {
-    gpio_set_level(this->pin, 1);
+void hal::Esp32GPIOPin::high() {
+    gpio_set_level(this->pin->getHwPinNum(), 1);
 }
 
-void GPIOPin::low() {
-    gpio_set_level(this->pin, 0);
+void hal::Esp32GPIOPin::low() {
+    gpio_set_level(this->pin->getHwPinNum(), 0);
 }
+
+
+// hal::HardwareContext
+hal::HardwareContext::HardwareContext() = default;
+
+hal::Pin hal::HardwareContext::pin(uint8_t pin) {
+    return m->pin(pin);
+}
+
+hal::GPIOPin hal::HardwareContext::gpioPin(Pin &pin) {
+    return m->gpioPin(pin);
+}
+
+hal::GPIOPin hal::HardwareContext::gpioPin(uint8_t pin) {
+    return m->gpioPin(pin);
+}
+
+hal::HardwareContext::~HardwareContext() = default;
+
+
+// hal::Pin
+hal::Pin::Pin(shared_ptr<Esp32Pin>& pin) : m { pin } { }
+
+uint8_t hal::Pin::getPinNum() const {
+    return m->getPinNum();
+}
+
+hal::Pin::~Pin() = default;
+
+
+// hal::GPIOPin
+hal::GPIOPin::GPIOPin(shared_ptr<Esp32GPIOPin> &pin) : m { pin } {}
+
+hal::GPIOPin::~GPIOPin() = default;
+
+void hal::GPIOPin::high() {
+    m->high();
+}
+
+void hal::GPIOPin::low() {
+    m->low();
+}
+
 
 SPIBus::SPIBus() {
     esp_err_t ret;

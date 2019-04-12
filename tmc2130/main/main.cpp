@@ -38,6 +38,7 @@
 #define MICRO_STEPPING 256
 
 using namespace std;
+using namespace hal;
 
 unique_ptr<vector<uint8_t>> read_register(SPIDevice &spiDevice, uint8_t reg);
 
@@ -63,12 +64,8 @@ void app_main(void)
     printf("Starting main\n");
 
     printf("Starting initialization\n");
+    HardwareContext context;
     SPIBus spiBus;
-
-    hal::HardwareContext context;
-    hal::Pin pin(context.getPin(8));
-    printf("Pin: %i", pin.getPin());
-
 
     printf("Initialized and adding device\n");
     SPIDevice spiDevice(PIN_NUM_CS, spiBus, 0);
@@ -95,9 +92,9 @@ void app_main(void)
     print_register(spiDevice, REG_CHOPCONF);
     print_register(spiDevice, REG_DRVSTATUS);
 
-    GPIOPin enablePin(PIN_EN);
-    GPIOPin directionPin(PIN_DIR);
-    GPIOPin stepPin(PIN_STEP);
+    GPIOPin enablePin {context.gpioPin(PIN_EN)};
+    GPIOPin directionPin {context.gpioPin(PIN_DIR)};
+    GPIOPin stepPin {context.gpioPin(PIN_STEP)};
 
     while (true) {
         enablePin.high();

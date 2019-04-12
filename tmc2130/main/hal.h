@@ -19,10 +19,10 @@
 // Completely re-work this to a context manager which is a factory of all HW resources
 namespace hal {
 class Pin;
-//class GPIOPin;
+class GPIOPin;
 class Esp32HardwareContext;
 class Esp32Pin;
-//class Esp32GPIOPin;
+class Esp32GPIOPin;
 
 class HardwareContext {
     pimpl<Esp32HardwareContext> m;
@@ -30,44 +30,31 @@ class HardwareContext {
 public:
     HardwareContext();
     ~HardwareContext();
-    Pin getPin(uint8_t pin);
+    Pin pin(uint8_t pin);
+    GPIOPin gpioPin(Pin &pin);
+    GPIOPin gpioPin(uint8_t pin);
 };
 
 class Pin {
+    pimpl_shared<Esp32Pin> m;
+
 public:
     explicit Pin(std::shared_ptr<Esp32Pin>& pin);
     ~Pin();
-    uint8_t getPin() const;
-
-private:
-    pimpl_shared<Esp32Pin> m;
+    uint8_t getPinNum() const;
 };
 
-//
-//class GPIOPin {
-//    pimpl<Esp32GPIOPin> m;
-//
-//public:
-//    GPIOPin(pimpl_shared<Esp32Pin> pin);
-//    ~GPIOPin();
-//    void high();
-//    void low();
-//};
-}
 
 class GPIOPin {
-//    Pin pinObj = 0;
-    gpio_num_t pin;
-    void setupGpioHardware() const;
+    pimpl_shared<Esp32GPIOPin> m;
+
 public:
-    GPIOPin(int pin);
-//    GPIOPin(Pin pinObj);
-
+    explicit GPIOPin(std::shared_ptr<Esp32GPIOPin>& pin);
+    ~GPIOPin();
     void high();
-
     void low();
-
 };
+}
 
 
 class SPIBus {

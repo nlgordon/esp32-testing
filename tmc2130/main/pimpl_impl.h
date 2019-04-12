@@ -34,7 +34,7 @@ template<typename T>
 pimpl_shared<T>::pimpl_shared() : m { new T{} } {}
 
 template<typename T>
-pimpl_shared<T>::pimpl_shared(std::shared_ptr<T> input) : m { input } { }
+pimpl_shared<T>::pimpl_shared(std::shared_ptr<T> &input) : m {input } { }
 
 template<typename T>
 template<typename ...Args>

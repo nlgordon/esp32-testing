@@ -26,7 +26,7 @@ private:
     std::shared_ptr<T> m;
 public:
     pimpl_shared();
-    pimpl_shared(std::shared_ptr<T> input);
+    pimpl_shared(std::shared_ptr<T> &input);
     template<typename ...Args> explicit pimpl_shared(Args&& ...);
     ~pimpl_shared();
     T* operator->();
