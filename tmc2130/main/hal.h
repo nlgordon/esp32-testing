@@ -20,9 +20,11 @@
 namespace hal {
 class Pin;
 class GPIOPin;
+class SPIBus;
 class Esp32HardwareContext;
 class Esp32Pin;
 class Esp32GPIOPin;
+class Esp32SPIBus;
 
 class HardwareContext {
     pimpl<Esp32HardwareContext> m;
@@ -33,6 +35,8 @@ public:
     Pin pin(uint8_t pin);
     GPIOPin gpioPin(Pin &pin);
     GPIOPin gpioPin(uint8_t pin);
+    SPIBus spiBus(Pin &mosi, Pin &miso, Pin &clock);
+    SPIBus spiBus(uint8_t bus);
 };
 
 class Pin {
@@ -53,6 +57,14 @@ public:
     ~GPIOPin();
     void high();
     void low();
+};
+
+class SPIBus {
+    pimpl_shared<Esp32SPIBus> m;
+
+public:
+    explicit SPIBus(std::shared_ptr<Esp32SPIBus>& bus);
+    ~SPIBus();
 };
 }
 

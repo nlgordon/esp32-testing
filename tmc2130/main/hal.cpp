@@ -16,12 +16,15 @@ using namespace std;
 class hal::Esp32HardwareContext {
     vector<shared_ptr<Esp32Pin>> pins;
     vector<shared_ptr<Esp32GPIOPin>> gpioPins;
+    vector<shared_ptr<Esp32SPIBus>> spiBuses;
 
 public:
-    Esp32HardwareContext() : pins {40}, gpioPins {40} {};
+    Esp32HardwareContext() : pins {40}, gpioPins {40}, spiBuses {3} {};
     Pin pin(uint8_t pin);
     GPIOPin gpioPin(const Pin &pin);
     GPIOPin gpioPin(uint8_t pin);
+    SPIBus spiBus(Pin &mosi, Pin &miso, Pin &clock);
+    SPIBus spiBus(uint8_t bus);
 };
 
 
@@ -44,6 +47,14 @@ public:
     void low();
 };
 
+class hal::Esp32SPIBus {
+    shared_ptr<hal::Esp32Pin> mosi;
+    shared_ptr<hal::Esp32Pin> miso;
+    shared_ptr<hal::Esp32Pin> clock;
+public:
+    Esp32SPIBus(shared_ptr<Esp32Pin> &&mosi, shared_ptr<Esp32Pin> &&miso, shared_ptr<Esp32Pin> &&clock);
+};
+
 
 // hal::EspHardwareContext
 hal::Pin hal::Esp32HardwareContext::pin(uint8_t pin) {
@@ -64,6 +75,16 @@ hal::GPIOPin hal::Esp32HardwareContext::gpioPin(const Pin &pin) {
 
 hal::GPIOPin hal::Esp32HardwareContext::gpioPin(uint8_t pin) {
     return gpioPin(this->pin(pin));
+}
+
+hal::SPIBus hal::Esp32HardwareContext::spiBus(hal::Pin &mosi, hal::Pin &miso, hal::Pin &clock) {
+    spiBuses[2].reset(new Esp32SPIBus(mosi.m.share(), miso.m.share(), clock.m.share()));
+    return hal::SPIBus {spiBuses[0] };
+}
+
+hal::SPIBus hal::Esp32HardwareContext::spiBus(uint8_t bus) {
+    spiBuses[bus].reset(new Esp32SPIBus(pin(GPIO_NUM_23).m.share(), pin(GPIO_NUM_19).m.share(), pin(GPIO_NUM_18).m.share()));
+    return hal::SPIBus { spiBuses[bus] };
 }
 
 
@@ -115,6 +136,13 @@ void hal::Esp32GPIOPin::low() {
 }
 
 
+// hal::Esp32SPIBus
+hal::Esp32SPIBus::Esp32SPIBus(shared_ptr<hal::Esp32Pin> &&mosi, shared_ptr<hal::Esp32Pin> &&miso,
+                              shared_ptr<hal::Esp32Pin> &&clock) : mosi { mosi }, miso { miso }, clock { clock } {
+    // Do SPI Bus setup here
+}
+
+
 // hal::HardwareContext
 hal::HardwareContext::HardwareContext() = default;
 
@@ -128,6 +156,14 @@ hal::GPIOPin hal::HardwareContext::gpioPin(Pin &pin) {
 
 hal::GPIOPin hal::HardwareContext::gpioPin(uint8_t pin) {
     return m->gpioPin(pin);
+}
+
+hal::SPIBus hal::HardwareContext::spiBus(hal::Pin &mosi, hal::Pin &miso, hal::Pin &clock) {
+    return m->spiBus(mosi, miso, clock);
+}
+
+hal::SPIBus hal::HardwareContext::spiBus(uint8_t bus) {
+    return m->spiBus(bus);
 }
 
 hal::HardwareContext::~HardwareContext() = default;
@@ -155,6 +191,12 @@ void hal::GPIOPin::high() {
 void hal::GPIOPin::low() {
     m->low();
 }
+
+
+// hal::SPIBus
+hal::SPIBus::SPIBus(shared_ptr<Esp32SPIBus> &bus) : m { bus } {}
+
+hal::SPIBus::~SPIBus() = default;
 
 
 SPIBus::SPIBus() {
