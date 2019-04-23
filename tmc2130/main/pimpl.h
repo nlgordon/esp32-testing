@@ -33,6 +33,7 @@ public:
     T& operator*();
     T* operator->() const;
     T& operator*() const;
+    std::shared_ptr<T> share() const;
 };
 
 #endif //TMC_2130_PIMPL_H

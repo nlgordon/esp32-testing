@@ -35,9 +35,11 @@ public:
 
 class hal::Esp32GPIOPin {
     shared_ptr<hal::Esp32Pin> pin;
+    void setupGpioHardware() const;
 
 public:
-    explicit Esp32GPIOPin(shared_ptr<Esp32Pin> &pin);
+    explicit Esp32GPIOPin(shared_ptr<Esp32Pin>& pin);
+    explicit Esp32GPIOPin(shared_ptr<Esp32Pin>&& pin);
     void high();
     void low();
 };
@@ -53,9 +55,9 @@ hal::Pin hal::Esp32HardwareContext::pin(uint8_t pin) {
 }
 
 hal::GPIOPin hal::Esp32HardwareContext::gpioPin(const Pin &pin) {
-    uint8_t pinNum {pin.getPinNum() };
+    uint8_t pinNum { pin.m->getPinNum() };
     if (!gpioPins[pinNum]) {
-        gpioPins[pinNum].reset(new Esp32GPIOPin(pins[pinNum]));
+        gpioPins[pinNum].reset(new Esp32GPIOPin(pin.m.share()));
     }
     return hal::GPIOPin { gpioPins[pinNum] };
 }
@@ -80,7 +82,15 @@ gpio_num_t hal::Esp32Pin::getHwPinNum() const {
 
 
 // hal::Esp32GPIOPin
-hal::Esp32GPIOPin::Esp32GPIOPin(shared_ptr<Esp32Pin> &pin) : pin {pin} {
+hal::Esp32GPIOPin::Esp32GPIOPin(shared_ptr<Esp32Pin> &pin) : pin { pin } {
+    setupGpioHardware();
+}
+
+hal::Esp32GPIOPin::Esp32GPIOPin(shared_ptr<Esp32Pin> &&pin) : pin { pin }{
+    setupGpioHardware();
+}
+
+void hal::Esp32GPIOPin::setupGpioHardware() const {
     gpio_config_t io_conf;
     //disable interrupt
     io_conf.intr_type = GPIO_INTR_DISABLE;

@@ -37,13 +37,13 @@ public:
 
 class Pin {
     pimpl_shared<Esp32Pin> m;
+    friend Esp32HardwareContext;
 
 public:
     explicit Pin(std::shared_ptr<Esp32Pin>& pin);
     ~Pin();
     uint8_t getPinNum() const;
 };
-
 
 class GPIOPin {
     pimpl_shared<Esp32GPIOPin> m;

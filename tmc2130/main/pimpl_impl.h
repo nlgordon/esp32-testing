@@ -55,5 +55,10 @@ T& pimpl_shared<T>::operator*() { return *m.get(); }
 template<typename T>
 T &pimpl_shared<T>::operator*() const { return *m.get(); }
 
+template<typename T>
+std::shared_ptr<T> pimpl_shared<T>::share() const {
+    return m;
+}
+
 
 #endif //TMC_2130_PIMPL_IMPL_H
