@@ -1,4 +1,4 @@
-set(COMPONENT_SRCS "app_wifi.c"
+set(COMPONENT_SRCS "app_wifi.cpp"
                    "esp_http_client_example.cpp")
 set(COMPONENT_ADD_INCLUDEDIRS ".")
 

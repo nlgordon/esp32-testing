@@ -9,6 +9,7 @@
 
 #include <string.h>
 #include <stdlib.h>
+#include <string>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "esp_log.h"
@@ -129,6 +130,7 @@ void app_main()
       ESP_ERROR_CHECK(nvs_flash_erase());
       ret = nvs_flash_init();
     }
+
     ESP_ERROR_CHECK(ret);
     app_wifi_initialise();
     app_wifi_wait_connected();

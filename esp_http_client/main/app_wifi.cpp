@@ -8,6 +8,7 @@
 */
 
 #include <lwip/ip_addr.h>
+#include <string.h>
 #include "esp_wifi.h"
 #include "esp_event_loop.h"
 #include "esp_log.h"
@@ -72,12 +73,10 @@ void app_wifi_initialise(void)
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT()
     ESP_ERROR_CHECK(esp_wifi_init(&cfg));
     ESP_ERROR_CHECK(esp_wifi_set_storage(WIFI_STORAGE_RAM));
-    wifi_config_t wifi_config = {
-        .sta = {
-            .ssid = CONFIG_WIFI_SSID,
-            .password = CONFIG_WIFI_PASSWORD,
-        },
-    };
+    wifi_config_t wifi_config;
+    memset(&wifi_config, 0, sizeof(wifi_config_t));
+    strcpy(reinterpret_cast<char *>(wifi_config.sta.ssid), CONFIG_WIFI_SSID);
+    strcpy(reinterpret_cast<char *>(wifi_config.sta.password), CONFIG_WIFI_PASSWORD);
     ESP_LOGI(TAG, "Setting WiFi configuration SSID %s...", wifi_config.sta.ssid);
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
     ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_config));
