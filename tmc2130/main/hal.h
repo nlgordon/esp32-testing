@@ -10,20 +10,31 @@
 #include <vector>
 #include <memory>
 
-#define PIN_NUM_MISO 19
-#define PIN_NUM_MOSI 23
-#define PIN_NUM_CLK  18
-#define PARALLEL_LINES 16
+#define PIN_NUM_MISO GPIO_NUM_19
+#define PIN_NUM_MOSI GPIO_NUM_23
+#define PIN_NUM_CLK  GPIO_NUM_18
+#define PARALLEL_LINES GPIO_NUM_16
+
+class Pin {
+    gpio_num_t pin;
+
+public:
+    Pin(int pin);
+    gpio_num_t getPin();
+};
 
 class GPIOPin {
-private:
     gpio_num_t pin;
+    Pin pinObj = 0;
+    void setupGpioHardware() const;
 public:
     GPIOPin(int pin);
+    GPIOPin(Pin pinObj);
 
     void high();
 
     void low();
+
 };
 
 
@@ -44,6 +55,6 @@ public:
 };
 
 void delayMilliseconds(int milliseconds);
-void printVector(const std::vector<uint8_t> &data);
+void printVector(const std::vector<uint8_t> &data, const std::string &label);
 
 #endif //TMC_2130_HAL_H
