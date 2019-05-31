@@ -3,3 +3,6 @@ cmake-build-debug/
 .idea/
 .DS_Store
 .python-version
+sdkconfig
+.envrc
+sdkconfig.old

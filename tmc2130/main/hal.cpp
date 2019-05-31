@@ -303,34 +303,7 @@ SPIDevice::SPIDevice(int pinChipSelect, SPIBus &bus, uint8_t command_bits) : bus
     ESP_ERROR_CHECK(ret);
 }
 
-unique_ptr<vector<uint8_t>> SPIDevice::transfer(const uint16_t cmd, const uint64_t addr, const vector<uint8_t> &tx) const {
-    esp_err_t ret;
-    unsigned int tx_bytes = tx.size();
-    unique_ptr<vector<uint8_t>> rx(new vector<uint8_t>(tx_bytes));
-
-    unique_ptr<vector<uint8_t>> tx_reversed(new vector<uint8_t>(tx_bytes));
-    reverse_copy(tx.begin(), tx.end(), tx_reversed->begin());
-
-    spi_transaction_t transaction = {
-            .flags = 0,
-            .cmd = cmd,
-            .addr = addr,
-            .length = 8 * tx_bytes,
-            .rxlength = 8 * tx_bytes,
-            .user = nullptr,
-            { .tx_buffer = tx_reversed->data() },
-            { .rx_buffer = rx->data() }
-    };
-
-    ret = spi_device_transmit(spi, &transaction);
-    ESP_ERROR_CHECK(ret);
-
-    reverse(rx->begin(), rx->end());
-
-    return rx;
-}
-
-std::unique_ptr<std::vector<uint8_t>> SPIDevice::transfer(const std::vector<uint8_t> &tx) const {
+std::unique_ptr<std::vector<uint8_t>> SPIDevice::transfer(const std::vector<uint8_t> &tx) {
     esp_err_t ret;
     unsigned int tx_bytes = tx.size();
     unique_ptr<vector<uint8_t>> rx(new vector<uint8_t>(tx_bytes));
