@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <string.h>
-#include <endian.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "esp_system.h"
@@ -8,11 +7,8 @@
 #include "esp_spi_flash.h"
 #include "driver/gpio.h"
 #include "hal.h"
+#include "hal_pimpl.h"
 
-
-#define PIN_NUM_MISO 19
-#define PIN_NUM_MOSI 23
-#define PIN_NUM_CLK  18
 #define PIN_NUM_CS   5
 
 #define PIN_EN       GPIO_NUM_21
@@ -38,19 +34,19 @@
 #define MICRO_STEPPING 256
 
 using namespace std;
-using namespace hal;
+using namespace hal_pimpl;
 
-unique_ptr<vector<uint8_t>> read_register(SPIDevice &spiDevice, uint8_t reg);
+unique_ptr<vector<uint8_t>> read_register(oldhal::SPIDevice &spiDevice, uint8_t reg);
 
-void print_register(SPIDevice &spiDevice, uint8_t device_register);
+void print_register(oldhal::SPIDevice &spiDevice, uint8_t device_register);
 
-void print_register(SPIDevice &spiDevice, uint8_t device_register) {
+void print_register(oldhal::SPIDevice &spiDevice, uint8_t device_register) {
     printf("Reading register %#2x : ", device_register);
     auto register_data = read_register(spiDevice, device_register);
     printVector(*register_data, "Returned data");
 }
 
-unique_ptr<vector<uint8_t>> read_register(SPIDevice &spiDevice, uint8_t reg) {
+unique_ptr<vector<uint8_t>> read_register(oldhal::SPIDevice &spiDevice, uint8_t reg) {
     vector<uint8_t> tx_data{(uint8_t)(READ_FLAG | reg), 0, 0, 0, 0};
     spiDevice.transfer(tx_data);
     return spiDevice.transfer(tx_data);
@@ -65,10 +61,10 @@ void app_main(void)
 
     printf("Starting initialization\n");
     HardwareContext context;
-    SPIBus spiBus;
+    oldhal::SPIBus spiBus;
 
     printf("Initialized and adding device\n");
-    SPIDevice spiDevice(PIN_NUM_CS, spiBus, 0);
+    oldhal::SPIDevice spiDevice(PIN_NUM_CS, spiBus, 0);
 
     printf("Configured SPI!\n");
 
