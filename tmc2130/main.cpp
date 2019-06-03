@@ -56,7 +56,7 @@ void app_main(void)
 
     printf("Starting initialization\n");
     unique_ptr<HardwareContext> ctx = (new ContextFactory())->createContext();
-    SPIBus* spiBus = ctx->spiBus(hal::SpiBusNum::BUS_1);
+    SPIBus* spiBus = ctx->spiBus(SpiBusNum::BUS_1);
 
     printf("Initialized and adding device\n");
     SPIDevice* spiDevice = ctx->spiDevice(spiBus, ctx->pin(PIN_NUM_CS));
