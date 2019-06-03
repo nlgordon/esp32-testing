@@ -1,18 +1,13 @@
 #include <stdio.h>
 #include <string.h>
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "esp_system.h"
-#include "driver/spi_master.h"
-#include "esp_spi_flash.h"
-#include "driver/gpio.h"
 #include "hal/hal.h"
+#include "hal/tasks.h"
 
 #define PIN_NUM_CS   5
 
-#define PIN_EN       GPIO_NUM_21
-#define PIN_DIR      GPIO_NUM_32
-#define PIN_STEP     GPIO_NUM_33
+#define PIN_EN       21
+#define PIN_DIR      32
+#define PIN_STEP     33
 
 #define PARALLEL_LINES 16
 
@@ -35,7 +30,6 @@
 using namespace std;
 using namespace hal;
 
-void delayMilliseconds(int milliseconds);
 void printVector(const std::vector<uint8_t> &data, const std::string &label);
 
 unique_ptr<vector<uint8_t>> read_register(SPIDevice *spiDevice, uint8_t reg);
@@ -104,10 +98,10 @@ void app_main(void)
         for (int i = 0; i < MICRO_STEPPING * STEPPER_STEPS_PER_REVOLUTION; i++) {
             stepPin->high();
             usleep(1);
-//        delayMilliseconds(1);
+            taskDelay(1);
             stepPin->low();
             usleep(1);
-//        delayMilliseconds(1);
+            taskDelay(1);
         }
         printf("Done stepping\n");
         enablePin->high();
@@ -123,8 +117,4 @@ void printVector(const vector <uint8_t> &data, const std::string &label) {
         printf("0x%02x ", item);
     }
     printf("\n");
-}
-
-void delayMilliseconds(int milliseconds) {
-    vTaskDelay(milliseconds / portTICK_RATE_MS);
 }
