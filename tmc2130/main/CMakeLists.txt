@@ -1,3 +1,7 @@
-add_executable(main main.cpp hal.cpp hal_pimpl.cpp hal_pointer.cpp)
+add_executable(main main.cpp)
 
-target_link_libraries(main idf::esp32 idf::freertos idf:cxx)
+add_subdirectory(hal)
+add_subdirectory(esp_hal)
+
+
+target_link_libraries(main esp_hal)

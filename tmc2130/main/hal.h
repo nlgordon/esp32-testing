@@ -1,5 +1,5 @@
 
-#ifndef TMC_2130_HAL_H
+#ifndef TMC_2130_ESP_HAL_H
 #define TMC_2130_HAL_H
 
 #include <driver/gpio.h>
@@ -33,4 +33,4 @@ void delayMilliseconds(int milliseconds);
 void printVector(const std::vector<uint8_t> &data, const std::string &label);
 void printArray(const uint8_t data[], size_t length, const std::string &label);
 
-#endif //TMC_2130_HAL_H
+#endif //TMC_2130_ESP_HAL_H
