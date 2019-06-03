@@ -6,7 +6,7 @@
 #include <memory>
 
 namespace hal {
-    enum spi_bus_num {
+    enum class SpiBusNum {
         BUS_1=1,
         BUS_2=2
     };
