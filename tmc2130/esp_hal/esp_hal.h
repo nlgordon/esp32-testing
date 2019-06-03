@@ -15,7 +15,7 @@ public:
     hal::Pin* pin(uint8_t pin) override;
     hal::GPIOPin* gpioPin(hal::Pin* pin) override;
     hal::GPIOPin* gpioPin(uint8_t pin) override;
-    hal::SPIBus* spiBus(hal::spi_bus_num bus) override;
+    hal::SPIBus* spiBus(hal::SpiBusNum bus) override;
     hal::SPIDevice* spiDevice(hal::SPIBus* bus, hal::Pin* chip_select) override;
 };
 }

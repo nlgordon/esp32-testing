@@ -15,7 +15,7 @@ namespace hal {
         virtual Pin* pin(uint8_t pin) = 0;
         virtual GPIOPin* gpioPin(Pin* pin) = 0;
         virtual GPIOPin* gpioPin(uint8_t pin) = 0;
-        virtual SPIBus* spiBus(spi_bus_num bus) = 0;
+        virtual SPIBus* spiBus(SpiBusNum bus) = 0;
         virtual SPIDevice* spiDevice(SPIBus* bus, Pin* chip_select) = 0;
     };
 

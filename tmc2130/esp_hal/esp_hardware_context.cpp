@@ -36,8 +36,8 @@ GPIOPin* Esp32HardwareContext::gpioPin(uint8_t pin) {
     return gpioPin(this->pin(pin));
 }
 
-SPIBus* Esp32HardwareContext::spiBus(spi_bus_num bus) {
-    spi_host_device_t hw_bus = bus == BUS_1 ? HSPI_HOST : VSPI_HOST;
+SPIBus* Esp32HardwareContext::spiBus(SpiBusNum bus) {
+    spi_host_device_t hw_bus = bus == SpiBusNum::BUS_1 ? HSPI_HOST : VSPI_HOST;
 
     if (!spiBuses[hw_bus]) {
         spiBuses[hw_bus] = std::make_unique<Esp32SPIBus>(*this, hw_bus);
