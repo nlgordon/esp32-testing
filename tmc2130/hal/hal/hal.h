@@ -20,7 +20,8 @@ namespace hal {
     };
 
     class ContextFactory {
-        virtual HardwareContext* createContext();
+    public:
+        virtual std::unique_ptr <HardwareContext> createContext();
     };
 }
 

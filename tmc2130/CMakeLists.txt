@@ -10,6 +10,11 @@ include($ENV{IDF_PATH}/tools/cmake/idf.cmake)
 idf_build_process(esp32
         BUILD_DIR ${CMAKE_BINARY_DIR})
 
-add_subdirectory(main)
+add_executable(main.elf main.cpp)
 
-idf_build_executable(main)
+add_subdirectory(hal)
+add_subdirectory(esp_hal)
+
+target_link_libraries(main.elf esp_hal)
+
+idf_build_executable(main.elf)

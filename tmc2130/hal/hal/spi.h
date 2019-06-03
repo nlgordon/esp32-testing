@@ -6,10 +6,10 @@
 #include <memory>
 
 namespace hal {
-    typedef enum {
+    enum spi_bus_num {
         BUS_1=1,
         BUS_2=2
-    } spi_bus_num;
+    };
 
     class SPIBus {
         // TODO: This is just to make this class polymorphic

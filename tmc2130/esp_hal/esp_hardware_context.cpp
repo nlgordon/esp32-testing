@@ -6,8 +6,8 @@
 using namespace hal;
 using namespace esp_hal;
 
-HardwareContext* ContextFactory::createContext() {
-    return new Esp32HardwareContext();
+std::unique_ptr<HardwareContext> ContextFactory::createContext() {
+    return std::make_unique<Esp32HardwareContext>();
 }
 
 Esp32HardwareContext::Esp32HardwareContext() : pins{40}, gpioPins{40}, spiBuses{3}, spiDevices{40} {
