@@ -3,7 +3,7 @@
 
 using namespace esp_hal;
 
-Esp32GPIOPin::Esp32GPIOPin(Esp32HardwareContext &ctx, Esp32Pin *pin) : pin {pin}, ctx{ctx} {
+Esp32GPIOPin::Esp32GPIOPin(Esp32HardwareContext* ctx, Esp32Pin *pin) : pin {pin}, ctx{ctx} {
     setupGpioHardware();
 }
 

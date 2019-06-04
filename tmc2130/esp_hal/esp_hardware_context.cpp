@@ -16,7 +16,7 @@ Esp32HardwareContext::Esp32HardwareContext() : pins{40}, gpioPins{40}, spiBuses{
 
 Pin* Esp32HardwareContext::pin(uint8_t pin) {
     if (!pins[pin]) {
-        pins[pin] = std::make_unique<Esp32Pin>(*this, pin);
+        pins[pin] = std::make_unique<Esp32Pin>(this, pin);
     }
 
     return pins[pin].get();
@@ -27,7 +27,7 @@ GPIOPin* Esp32HardwareContext::gpioPin(Pin *pin) {
     uint8_t pin_num = espPin->getPinNum();
 
     if (!gpioPins[pin_num]) {
-        gpioPins[pin_num] = std::make_unique<Esp32GPIOPin>(*this, espPin);
+        gpioPins[pin_num] = std::make_unique<Esp32GPIOPin>(this, espPin);
     }
     return gpioPins[pin_num].get();
 }
@@ -40,7 +40,7 @@ SPIBus* Esp32HardwareContext::spiBus(SpiBusNum bus) {
     spi_host_device_t hw_bus = bus == SpiBusNum::BUS_1 ? HSPI_HOST : VSPI_HOST;
 
     if (!spiBuses[hw_bus]) {
-        spiBuses[hw_bus] = std::make_unique<Esp32SPIBus>(*this, hw_bus);
+        spiBuses[hw_bus] = std::make_unique<Esp32SPIBus>(this, hw_bus);
     }
     return spiBuses[hw_bus].get();
 }
@@ -49,7 +49,7 @@ SPIDevice* Esp32HardwareContext::spiDevice(SPIBus *bus, Pin *chip_select) {
     uint8_t chip_select_pin = chip_select->getPinNum();
 
     if (!spiDevices[chip_select_pin]) {
-        spiDevices[chip_select_pin] = std::make_unique<Esp32SPIDevice>(*this,
+        spiDevices[chip_select_pin] = std::make_unique<Esp32SPIDevice>(this,
                 dynamic_cast<Esp32SPIBus*>(bus),
                 dynamic_cast<Esp32Pin*>(chip_select));
     }

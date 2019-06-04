@@ -16,7 +16,7 @@ namespace hal {
         virtual GPIOPin* gpioPin(Pin* pin) = 0;
         virtual GPIOPin* gpioPin(uint8_t pin) = 0;
         virtual SPIBus* spiBus(SpiBusNum bus) = 0;
-        virtual SPIDevice* spiDevice(SPIBus* bus, Pin* chip_select) = 0;
+//        virtual SPIDevice* spiDevice(SPIBus* bus, Pin* chip_select) = 0;
     };
 
     class ContextFactory {

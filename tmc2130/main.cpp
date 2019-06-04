@@ -1,7 +1,9 @@
 #include <stdio.h>
 #include <string.h>
+#include <iostream>
 #include "hal/hal.h"
 #include "hal/tasks.h"
+#include "hal/app.h"
 
 #define PIN_NUM_CS   5
 #define PIN_EN       21
@@ -50,63 +52,85 @@ unique_ptr<vector<uint8_t>> read_register(SPIDevice *spiDevice, uint8_t reg) {
 
 extern "C" {
 
-void app_main(void)
-{
-    printf("Starting main\n");
+    class StepperApp : public hal::App{
+        GPIOPin* enablePin;
+        GPIOPin* directionPin;
+        GPIOPin* stepPin;
+        SPIDevice* spiDevice;
 
-    printf("Starting initialization\n");
-    unique_ptr<HardwareContext> ctx = (new ContextFactory())->createContext();
-    SPIBus* spiBus = ctx->spiBus(SpiBusNum::BUS_1);
+    public:
+        StepperApp(GPIOPin* enablePin, GPIOPin* directionPin, GPIOPin* stepPin, SPIDevice* spiDevice) : enablePin {enablePin}, directionPin{directionPin}, stepPin{stepPin}, spiDevice{spiDevice} {
 
-    printf("Initialized and adding device\n");
-    SPIDevice* spiDevice = ctx->spiDevice(spiBus, ctx->pin(PIN_NUM_CS));
+        };
 
-    printf("Configured SPI!\n");
+        void setup() override {
+            print_register(spiDevice, REG_GSTAT);
+            print_register(spiDevice, REG_GCONF);
+            print_register(spiDevice, REG_IHOLD_IRUN);
+            print_register(spiDevice, REG_CHOPCONF);
 
-    print_register(spiDevice, REG_GSTAT);
-    print_register(spiDevice, REG_GCONF);
-    print_register(spiDevice, REG_IHOLD_IRUN);
-    print_register(spiDevice, REG_CHOPCONF);
-
-    printf("Setting current reference\n");
-    const vector<uint8_t> gconf_reg_set = vector<uint8_t> {WRITE_FLAG | REG_GCONF, 0x00, 0x00, 0x00, 0x01};
-    const vector<uint8_t> ihold_reg_set = vector<uint8_t> {WRITE_FLAG | REG_IHOLD_IRUN, 0x00, 0x00, 0x10, 0x10};
-    const vector<uint8_t> chopconf_reg_set = vector<uint8_t> {WRITE_FLAG | REG_CHOPCONF, 0x00, 0x00, 0x80, 0x08};
-    printVector(gconf_reg_set, "GCONF");
-    spiDevice->transfer(gconf_reg_set);
-    printVector(ihold_reg_set, "IHOLD");
-    spiDevice->transfer(ihold_reg_set);
-    printVector(chopconf_reg_set, "CHOPCONF");
-    spiDevice->transfer(chopconf_reg_set);
-    print_register(spiDevice, REG_GCONF);
-    print_register(spiDevice, REG_IHOLD_IRUN);
-    print_register(spiDevice, REG_CHOPCONF);
-    print_register(spiDevice, REG_DRVSTATUS);
-
-    GPIOPin* enablePin = ctx->gpioPin(PIN_EN);
-    GPIOPin* directionPin = ctx->gpioPin(PIN_DIR);
-    GPIOPin* stepPin = ctx->gpioPin(PIN_STEP);
-
-    while (true) {
-        enablePin->high();
-        directionPin->high();
-
-        printf("Step\n");
-        enablePin->low();
-
-        for (int i = 0; i < MICRO_STEPPING * STEPPER_STEPS_PER_REVOLUTION; i++) {
-            stepPin->high();
-            usleep(1);
-            taskDelay(1);
-            stepPin->low();
-            usleep(1);
-            taskDelay(1);
+            cout << "Setting current reference" << endl;
+            const vector<uint8_t> gconf_reg_set = vector<uint8_t> {WRITE_FLAG | REG_GCONF, 0x00, 0x00, 0x00, 0x01};
+            const vector<uint8_t> ihold_reg_set = vector<uint8_t> {WRITE_FLAG | REG_IHOLD_IRUN, 0x00, 0x00, 0x10, 0x10};
+            const vector<uint8_t> chopconf_reg_set = vector<uint8_t> {WRITE_FLAG | REG_CHOPCONF, 0x00, 0x00, 0x80, 0x08};
+            printVector(gconf_reg_set, "GCONF");
+            spiDevice->transfer(gconf_reg_set);
+            printVector(ihold_reg_set, "IHOLD");
+            spiDevice->transfer(ihold_reg_set);
+            printVector(chopconf_reg_set, "CHOPCONF");
+            spiDevice->transfer(chopconf_reg_set);
+            print_register(spiDevice, REG_GCONF);
+            print_register(spiDevice, REG_IHOLD_IRUN);
+            print_register(spiDevice, REG_CHOPCONF);
+            print_register(spiDevice, REG_DRVSTATUS);
         }
-        printf("Done stepping\n");
-        enablePin->high();
-        print_register(spiDevice, REG_DRVSTATUS);
+
+        void loop() override {
+            enablePin->high();
+            directionPin->high();
+
+            cout << "Step" << endl;
+            enablePin->low();
+
+            for (int i = 0; i < MICRO_STEPPING * STEPPER_STEPS_PER_REVOLUTION; i++) {
+                stepPin->high();
+                usleep(1);
+                taskDelay(1);
+                stepPin->low();
+                usleep(1);
+                taskDelay(1);
+            }
+            cout << "Done stepping" << endl;
+            enablePin->high();
+            print_register(spiDevice, REG_DRVSTATUS);
+        }
+    };
+
+    void app_main(void)
+    {
+        cout << "Starting main" << endl;
+
+        cout << "Starting initialization" << endl;
+        auto ctx = (new ContextFactory())->createContext();
+        auto spiBus = ctx->spiBus(SpiBusNum::BUS_1);
+
+        cout << "Initialized bus and adding device" << endl;
+        auto spiDevice = spiBus->device(PIN_NUM_CS);
+
+        cout << "Configured SPI!" << endl;
+
+        auto enablePin = ctx->gpioPin(PIN_EN);
+        auto directionPin = ctx->gpioPin(PIN_DIR);
+        auto stepPin = ctx->gpioPin(PIN_STEP);
+
+        StepperApp app(enablePin, directionPin, stepPin, spiDevice);
+
+        app.setup();
+
+        while (true) {
+            app.loop();
+        }
     }
-}
 
 }
 

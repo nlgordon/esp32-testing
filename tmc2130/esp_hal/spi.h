@@ -8,25 +8,26 @@
 
 namespace esp_hal {
     class Esp32SPIBus : public hal::SPIBus {
-        Esp32HardwareContext& ctx;
+        Esp32HardwareContext* ctx;
         spi_host_device_t bus_num;
         Esp32Pin* mosi;
         Esp32Pin* miso;
         Esp32Pin* clock;
     public:
-        Esp32SPIBus(Esp32HardwareContext& ctx, spi_host_device_t bus_num);
+        Esp32SPIBus(Esp32HardwareContext* ctx, spi_host_device_t bus_num);
         spi_host_device_t getBusNum();
-        void foo() override {};
+        hal::SPIDevice* device(hal::Pin* chip_select) override;
+        hal::SPIDevice* device(uint8_t chip_select) override;
     };
 
     class Esp32SPIDevice : public hal::SPIDevice {
-        Esp32HardwareContext& ctx;
+        Esp32HardwareContext* ctx;
         Esp32SPIBus* bus;
         Esp32Pin* chip_select;
         spi_device_handle_t spi;
 
     public:
-        Esp32SPIDevice(Esp32HardwareContext& ctx, Esp32SPIBus* bus, Esp32Pin* chip_select);
+        Esp32SPIDevice(Esp32HardwareContext* ctx, Esp32SPIBus* bus, Esp32Pin* chip_select);
         std::unique_ptr<std::vector<uint8_t>> transfer(const std::vector<uint8_t> &tx) const override;
     };
 

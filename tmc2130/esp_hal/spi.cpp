@@ -8,14 +8,14 @@ using namespace esp_hal;
 using namespace std;
 
 // hal::Esp32SPIBus
-Esp32SPIBus::Esp32SPIBus(Esp32HardwareContext& ctx, spi_host_device_t bus_num) : bus_num{bus_num}, ctx{ctx} {
+Esp32SPIBus::Esp32SPIBus(Esp32HardwareContext* ctx, spi_host_device_t bus_num) : bus_num{bus_num}, ctx{ctx} {
     gpio_num_t mosi_pin = bus_num == HSPI_HOST ? GPIO_NUM_13 : GPIO_NUM_23;
     gpio_num_t miso_pin = bus_num == HSPI_HOST ? GPIO_NUM_12 : GPIO_NUM_19;
     gpio_num_t clock_pin = bus_num == HSPI_HOST ? GPIO_NUM_14 : GPIO_NUM_18;
 
-    mosi = dynamic_cast<Esp32Pin*>(ctx.pin(mosi_pin));
-    miso = dynamic_cast<Esp32Pin*>(ctx.pin(miso_pin));
-    clock = dynamic_cast<Esp32Pin*>(ctx.pin(clock_pin));
+    mosi = dynamic_cast<Esp32Pin*>(ctx->pin(mosi_pin));
+    miso = dynamic_cast<Esp32Pin*>(ctx->pin(miso_pin));
+    clock = dynamic_cast<Esp32Pin*>(ctx->pin(clock_pin));
 
     esp_err_t ret;
     spi_bus_config_t buscfg={
@@ -36,8 +36,16 @@ spi_host_device_t Esp32SPIBus::getBusNum() {
     return bus_num;
 }
 
+hal::SPIDevice *Esp32SPIBus::device(hal::Pin *chip_select) {
+    return ctx->spiDevice(this, chip_select);
+}
+
+hal::SPIDevice *Esp32SPIBus::device(uint8_t chip_select) {
+    return device(ctx->pin(chip_select));
+}
+
 // hal::Esp32SPIDevice
-Esp32SPIDevice::Esp32SPIDevice(Esp32HardwareContext& ctx, Esp32SPIBus* bus, Esp32Pin* chip_select) : ctx{ctx}, bus { bus }, chip_select { chip_select }, spi{nullptr} {
+Esp32SPIDevice::Esp32SPIDevice(Esp32HardwareContext* ctx, Esp32SPIBus* bus, Esp32Pin* chip_select) : ctx{ctx}, bus { bus }, chip_select { chip_select }, spi{nullptr} {
     esp_err_t ret;
     spi_device_interface_config_t devcfg={
             .command_bits = 0,

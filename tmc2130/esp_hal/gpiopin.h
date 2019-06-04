@@ -8,11 +8,11 @@
 namespace esp_hal {
     class Esp32GPIOPin : public hal::GPIOPin {
         Esp32Pin* pin;
+        Esp32HardwareContext* ctx;
         void setupGpioHardware() const;
-        Esp32HardwareContext& ctx;
 
     public:
-        explicit Esp32GPIOPin(Esp32HardwareContext &ctx, Esp32Pin *pin);
+        explicit Esp32GPIOPin(Esp32HardwareContext* ctx, Esp32Pin *pin);
         void high() override;
         void low() override;
     };

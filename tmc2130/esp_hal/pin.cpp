@@ -3,7 +3,7 @@
 using namespace esp_hal;
 using namespace hal;
 
-Esp32Pin::Esp32Pin(Esp32HardwareContext &ctx, uint8_t pin) : ctx{ctx} {
+Esp32Pin::Esp32Pin(Esp32HardwareContext* ctx, uint8_t pin) : ctx{ctx} {
     this->pin = static_cast<gpio_num_t>(pin);
 }
 

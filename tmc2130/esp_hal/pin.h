@@ -8,9 +8,9 @@
 namespace esp_hal {
     class Esp32Pin : public hal::Pin {
         gpio_num_t pin;
-        Esp32HardwareContext& ctx;
+        Esp32HardwareContext* ctx;
     public:
-        explicit Esp32Pin(Esp32HardwareContext &ctx, uint8_t pin);
+        explicit Esp32Pin(Esp32HardwareContext* ctx, uint8_t pin);
         uint8_t getPinNum() const override;
         gpio_num_t getHwPinNum() const;
     };
